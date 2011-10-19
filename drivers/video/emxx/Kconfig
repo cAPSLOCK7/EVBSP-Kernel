@@ -1,0 +1,92 @@
+#
+# EMXX fb driver configuration
+#
+
+menu "EMXX Video subsystem"
+        depends on FB && ARCH_EMXX
+
+config EMXX_VIDEO
+	bool "EMXX Video subsystem"
+        depends on FB && ARCH_EMXX
+	default y
+        help
+          This is the Video subsystem for EMXX seriase boards.
+
+config FB_EMXX
+	bool "EMXX FB support"
+        depends on EMXX_VIDEO
+	default y
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+        help
+          This is the frame buffer device driver for EMXX seriase boards.
+
+config FB_EMXX_ARGB8888
+        bool "EMXX FB ARGB8888 framebuffer support"
+        depends on FB_EMXX
+        default n
+        help
+          Support ARGB8888 framebuffer for EMXX seriase boards.
+
+config FB_EMXX_ABGR8888
+        bool "EMXX FB ABGR8888 framebuffer support"
+        depends on FB_EMXX_ARGB8888
+        default n
+        help
+          Support ABGR8888 framebuffer for EMXX seriase boards.
+
+config FB_EMXX_BGR888
+        bool "EMXX FB BGR888 framebuffer support"
+        depends on FB_EMXX
+        default n
+
+config EMXX_LCD_FRAMECACHE
+        bool "EMXX LCD FRAMECACHE support"
+        depends on FB_EMXX
+        default y
+        help
+          Support LCD framecache for EMXX seriase boards.
+
+config FB_EMXX_PANDISP
+	bool "EMXX fb_pan_display support"
+        depends on FB_EMXX
+	default y
+        help
+          Support fb_pan_display for EMXX seriase boards.
+
+config FB_EMXX_PANDISP_BLOCK
+	bool "EMXX fb_pan_display BLOCK support"
+        depends on FB_EMXX_PANDISP
+	default y
+        help
+          fb_pan_display returns after flip is completed.
+
+config FB_EMXX_COPYBIT_PREMULTI
+        bool "EMXX Copybit Premultiplied alpha support"
+        depends on FB_EMXX && EMXX_ANDROID
+        default y
+
+config EMXX_HDMI
+	bool "EMXX HDMI support"
+        depends on EMXX_VIDEO
+	default n
+        help
+          This is the HDMI device driver for EMXX seriase boards.
+
+config EMXX_HDMI_ADV7523
+	tristate "EMXX HDMI ADV7523 support"
+        depends on EMXX_HDMI
+	default y
+        help
+          Support ADV7523 HDMI TX for EMXX seriase boards.
+
+config EMXX_HDMI_ADV7523_DEBUG
+	bool "EMXX HDMI ADV7523 debug message"
+        depends on EMXX_HDMI_ADV7523 && DEBUG_KERNEL
+	default n
+        help
+          Debug message from ADV7523 HDMI TX driver.
+
+
+endmenu

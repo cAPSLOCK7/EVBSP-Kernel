@@ -1,0 +1,22 @@
+
+config VIDEO_EMXX
+	bool "EMXX Video for Linux2 driver"
+	depends on VIDEO_DEV && ARCH_EMXX && EMXX_SIZROT2
+	default y
+	select VIDEO_BUF
+
+config VIDEO_EMXX_FRAMESKIP
+	bool "enable frame skip function"
+	depends on VIDEO_EMXX
+	default y
+
+config VIDEO_EMXX_FILTER
+	bool "enable setting resize filter function"
+	depends on VIDEO_EMXX
+	default y
+
+config VIDEO_EMXX_IMAGESIZE
+	bool "enable to set original image size"
+	depends on VIDEO_EMXX
+	default y
+

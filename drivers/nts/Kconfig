@@ -1,0 +1,39 @@
+#
+# NTS driver configuration
+#
+
+menu "EMXX Video-out support"
+        depends on FB_EMXX
+
+config EMXX_NTS
+	bool "EMXX NTSC Video-out support"
+        depends on VIDEO_EMXX
+	default y
+        help
+          This is the TV out subsystem for EMXX seriase boards.
+
+choice
+	prompt "NTS Video Encoder Device"
+	depends on EMXX_NTS
+
+config EMXX_NTS_ADV7179
+	bool "ADV7179"
+endchoice
+
+choice
+	bool "ADV7179 Video-Encoder option"
+        depends on EMXX_NTS_ADV7179
+	default EMXX_NTS_PAL
+
+config EMXX_NTS_PAL
+	bool "PAL B/D/G/H/I/N"
+        help
+          Selected this configuration is support PAL B/D/G/H/I/N.
+
+config EMXX_NTS_PAL60
+	bool "PAL-60"
+        help
+          Selected this configuration is support PAL-60.
+endchoice
+
+endmenu

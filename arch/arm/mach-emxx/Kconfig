@@ -1,0 +1,340 @@
+if ARCH_EMXX
+
+menu "EMMA Mobile series Implementations"
+
+choice
+	prompt "EMMA Mobile Core Type"
+	default MACH_EMEV
+
+config MACH_EMEV
+	bool "EMMA Mobile EV1/EV2"
+	select CPU_V7
+
+config MACH_EMGR
+	bool "EMMA Mobile EV0"
+	select CPU_V7
+endchoice
+
+choice
+	prompt "EMMA Mobile Board Type"
+	default EMEV_BOARD_EVA
+
+config EMEV_BOARD_EVA
+	bool "EMMA Mobile EV1/2 Evaluation board"
+	depends on MACH_EMEV
+
+config EMGR_BOARD_EVA
+	bool "EMMA Mobile EV0 Evaluation board"
+	depends on MACH_EMGR
+endchoice
+
+if MACH_EMGR
+choice
+	prompt "EMMA Mobile EV0 Memory size"
+	default EMGR_2G_MEM
+
+config EMGR_2G_MEM
+	bool "2G Bit"
+
+config EMGR_1G_MEM
+	bool "1G Bit"
+endchoice
+endif
+
+config EMGR_TI_PMIC
+	bool "TI power board support"
+	depends on EMGR_BOARD_EVA
+
+config EMXX_QR
+	bool "Enable QR"
+	default y
+
+config EMXX_L310
+	bool "ARM L2 cache Enable"
+	default y
+	select CACHE_L2X0
+	select EMXX_L310_NORAM if MACH_EMGR
+
+config EMXX_L310_NORAM
+	bool
+	depends on MACH_EMGR
+
+if MACH_EMEV
+
+config EMXX_L310_WT
+	bool "ARM L2 cache WriteThrough"
+	depends on EMXX_L310
+	default n
+
+choice
+	prompt "L2 cache way-size"
+	depends on EMXX_L310
+	default EMXX_L310_8WAY
+
+config EMXX_L310_8WAY
+	bool "8way 32KByte"
+
+config EMXX_L310_16WAY
+	bool "16way 16KByte"
+endchoice
+
+config PL310_ERRATA_727915
+	bool "PL310 errata: Background Clean & Invalidate by Way operation can cause data"
+	default y
+	help
+	  This option enables the workaround for the 727915 PL310 L2 cache
+	  controller (r2p0,r3p0) erratum. PL310 implements the Clean &
+	  Invalidate by Way L2 cache maintenance operation (offset 0x7FC).
+	  This operation runs in background so that PL310 can handle normal
+	  accesses while it is in progress. Under very rare circumstances, due
+	  to this erratum, write data can be lost when PL310 treats a cacheable
+	  write transaction during a Clean & Invalidate by Way operation.
+endif
+
+choice
+	prompt "Target board System clock(PLL3)"
+	default EMXX_PLL3_230MHZ
+
+config EMXX_PLL3_230MHZ
+	bool "230MHZ"
+
+config EMXX_PLL3_238MHZ
+	bool "238MHZ"
+endchoice
+
+config EMXX_ANDROID
+	bool "Use Android setting"
+
+config EMXX_SPI0
+	bool "SPI0 Driver support"
+	default y
+
+config EMXX_SPI_EXCL_SP0
+	int "SP0 Exclusive control method (0:scheduling/1:interrupt disabled)"
+	depends on EMXX_SPI0
+	default "1"
+
+config EMXX_SPI
+	tristate "SPI Driver support (SPI1)"
+
+config EMXX_PWM
+	tristate "PWM Driver support"
+
+config EMXX_DTV
+	tristate "DTV Interface support"
+
+config EMXX_DTV_BUFFERSIZE
+	int "DMA buffer size (752-)[byte]"
+	depends on EMXX_DTV
+	default "8192"
+
+config EMXX_PWC
+	bool
+	depends on EMXX_SPI0
+	default y
+
+config EMXX_EXTIO
+	bool
+	depends on (EMEV_BOARD_EVA || EMGR_BOARD_EVA) && I2C
+	default y
+
+config EMXX_LED
+	bool
+	depends on EMXX_PWC
+	default y
+
+config EMXX_PDMA
+	tristate "Software interrupt support for PDMA"
+	depends on MACH_EMGR
+	default y
+
+config EMXX_INTERDSP
+	tristate "InterDSP support"
+	default m
+
+config ARM_ERRATA_716044
+	bool "ARM errata: Under very rare circumstances, an uncacheable load multiple instruction can cause a deadlock"
+	depends on CPU_V7
+	default y if MACH_EMEV
+	help
+	  This option enables the workaround for the 716044 Cortex-A9
+	  (r1p0..r1p2) erratum. Under some rare circumstances, an uncacheable
+	  load multiple instruction (LDRD, LDM, VLDM, VLD1, VLD2, VLD3, VLD4)
+	  can cause a processor deadlock.
+
+config ARM_ERRATA_720789
+	bool "ARM errata: TLBIASIDIS and TLBIMVAIS operations can broadcast a faulty ASID"
+	depends on CPU_V7 && SMP
+	default y
+	help
+	  This option enables the workaround for the 720789 Cortex-A9 (prior to
+	  r2p0) erratum. A faulty ASID can be sent to the other CPUs for the
+	  broadcasted CP15 TLB maintenance operations TLBIASIDIS and TLBIMVAIS.
+	  As a consequence of this erratum, some TLB entries which should be
+	  invalidated are not, resulting in an incoherency in the system page
+	  tables. The workaround changes the TLB flushing routines to invalidate
+	  entries regardless of the ASID.
+
+config ARM_ERRATA_742230
+	bool "ARM errata: DMB behaviour may be faulty"
+	depends on CPU_V7
+	default y
+	help
+		Cortex-A9 MPCore (r1p0..r2p2) erratum
+
+config ARM_ERRATA_743622
+	bool "ARM errata: Faulty hazard checking in the Store Buffer may lead to data corruption"
+	depends on MACH_EMGR
+	default y
+	help
+	  This option enables the workaround for the 743622 Cortex-A9
+	  (r2p0..r2p8) erratum. Under very rare conditions, a faulty optimization
+	  in the Cortex-A9 Store Buffer may lead to data corruption.
+
+config ARM_ERRATA_751472
+	bool "An interrupted ICIALLUIS operation may prevent the completion of a following broadcasted operation"
+	depends on CPU_V7 && SMP
+	default y
+	help
+	  This option enables the workaround for the 751472 Cortex-A9 MPCore(prior to
+	  r3p0) erratum. In an MPCore configuration with 2 processors or more working
+	  in SMP mode with maintenance operation broadcast enabled, if a processor is
+	  interrupted while executing an ICIALLUIS operation, and performs another
+	  broadcasted maintenance operation during its Interrupt Service Routine,
+	  then this second operation may not be executed on the other processors in the cluster.
+
+if MACH_EMEV
+config EMXX_DMA_LCH0
+	int "P2M/M2P DMA LCH0 device"
+	default 7
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH1
+	int "P2M/M2P DMA LCH1 device"
+	default 0
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH2
+	int "P2M/M2P DMA LCH2 device"
+	default 1
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP 
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH3
+	int "P2M/M2P DMA LCH3 device"
+	default 2
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH4
+	int "P2M/M2P DMA LCH4 device"
+	default 10
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH5
+	int "P2M/M2P DMA LCH5 device"
+	default 11
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH6
+	int "P2M/M2P DMA LCH6 device"
+	default 12
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+
+config EMXX_DMA_LCH7
+	int "P2M/M2P DMA LCH7 device"
+	default 13
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  3:CRP
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3    14:SIO4   15:SIO5
+endif
+
+if MACH_EMGR
+config EMXX_DMA_LCH0
+	int "P2M/M2P DMA LCH0 device"
+	default 7
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH1
+	int "P2M/M2P DMA LCH1 device"
+	default 0
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH2
+	int "P2M/M2P DMA LCH2 device"
+	default 1
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH3
+	int "P2M/M2P DMA LCH3 device"
+	default 2
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH4
+	int "P2M/M2P DMA LCH4 device"
+	default 10
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH5
+	int "P2M/M2P DMA LCH5 device"
+	default 11
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH6
+	int "P2M/M2P DMA LCH6 device"
+	default 12
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+
+config EMXX_DMA_LCH7
+	int "P2M/M2P DMA LCH7 device"
+	default 13
+	help
+	   0:MMM    1:MSP_GDF  2:MSP_PB  4:UART4  5:UART5
+	   6:UART0  7:UART1    8:UART2   9:UART3 10:SIO0  11:SIO1
+	   12:SIO2 13:SIO3
+endif
+
+endmenu
+
+endif

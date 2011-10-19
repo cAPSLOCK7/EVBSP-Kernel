@@ -1,0 +1,19 @@
+
+config VIDEO_EMXX_CAMERA
+	tristate "EMXX Video for Linux2 camera driver"
+	depends on VIDEO_DEV && MACH_EMEV
+
+choice
+	prompt "Camera Device"
+	depends on VIDEO_EMXX_CAMERA
+
+config VIDEO_EMXX_CAMERA_RJ6ABA100
+	boolean "RJ6ABA100"
+
+config EMXX_CAMERA_RJ6ABA100
+	tristate
+	depends on VIDEO_EMXX_CAMERA_RJ6ABA100
+	default VIDEO_EMXX_CAMERA
+
+endchoice
+

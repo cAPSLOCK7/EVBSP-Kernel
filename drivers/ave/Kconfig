@@ -1,0 +1,21 @@
+#
+# AVE dricer configuration
+#
+
+menu "EMMA Mobile series AVE support"
+        depends on ARCH_EMXX
+
+config EMXX_AVE
+	tristate "EMXX AVE support"
+	default m
+	help
+          This is the AVE device driver for EMMA Mobile series boards.
+
+config EMXX_AVE_VC1
+       bool "AVE VC-1 support"
+       depends on EMXX_AVE
+       default y
+       help
+         AVE device driver support VC-1 decode.
+
+endmenu

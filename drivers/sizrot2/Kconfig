@@ -1,0 +1,14 @@
+#
+# SIZ/ROT driver configuration
+#
+
+menu "EMXX SIZ/ROT support"
+        depends on ARCH_EMXX
+
+config EMXX_SIZROT2
+	bool "EMXX SIZ/ROT support"
+	default y
+	help
+          This is the SIZ/ROT device driver for EMXX boards.
+
+endmenu

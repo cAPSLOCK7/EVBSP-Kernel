@@ -1,0 +1,14 @@
+#
+# IMC driver configuration
+#
+
+menu "EMXX IMC support"
+        depends on ARCH_EMXX
+
+config EMXX_IMC
+	bool "EMXX IMC support"
+	default y
+	help
+          This is the IMC device driver for EMXX boards.
+
+endmenu
